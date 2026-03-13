@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Link from 'next/link';
+import { authStyles } from '../styles/authStyles';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -15,8 +17,7 @@ export default function Login() {
     setMessage('');
     setLoading(true);
 
-    // Берём адрес из .env или запасной вариант
-    const apiUrl = 'http://localhost:5000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
     try {
       const res = await fetch(`${apiUrl}/login`, {
@@ -31,93 +32,83 @@ export default function Login() {
         setMessage('✅ Вход выполнен!');
         localStorage.setItem('token', data.token);
         localStorage.setItem('userEmail', data.user.email);
-        window.dispatchEvent(new Event('authChange')); // ← добавить эту
+        window.dispatchEvent(new Event('authChange'));
         router.push('/subscriptions');
       } else {
         setMessage('❌ ' + (data.error || 'Ошибка входа'));
       }
     } catch (err) {
       setMessage('❌ Ошибка соединения с сервером');
-      console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main style={{ 
-      padding: '2rem',
-      maxWidth: '400px',
-      margin: '0 auto',
-      fontFamily: 'system-ui, sans-serif'
-    }}>
-      <h1 style={{ marginBottom: '1.5rem' }}>Вход в аккаунт</h1>
-      
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+    <div style={authStyles.container}>
+      <div style={authStyles.card}>
+        <div style={authStyles.header}>
+          <h1 style={authStyles.title}>Вход</h1>
+          <p style={authStyles.subtitle}>Войдите в свой аккаунт</p>
+        </div>
+
+        <form onSubmit={handleLogin} style={authStyles.form}>
+          <div style={authStyles.inputGroup}>
+            <label style={authStyles.label}>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading}
+              style={authStyles.input}
+              placeholder="your@email.com"
+            />
+          </div>
+
+          <div style={authStyles.inputGroup}>
+            <label style={authStyles.label}>Пароль</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+              style={authStyles.input}
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button 
+            type="submit" 
             disabled={loading}
             style={{
-              width: '100%',
-              padding: '0.5rem',
-              border: '1px solid #ccc',
-              borderRadius: '4px'
+              ...authStyles.button,
+              ...(loading ? authStyles.buttonDisabled : {}),
             }}
-          />
-        </div>
+          >
+            {loading ? 'Вход...' : 'Войти'}
+          </button>
+        </form>
 
-        <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>Пароль:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              border: '1px solid #ccc',
-              borderRadius: '4px'
-            }}
-          />
-        </div>
+        {message && (
+          <div style={{
+            ...authStyles.message,
+            ...(message.includes('✅') ? authStyles.messageSuccess : authStyles.messageError)
+          }}>
+            {message}
+          </div>
+        )}
 
-        <button 
-          type="submit" 
-          disabled={loading}
-          style={{
-            padding: '0.75rem',
-            backgroundColor: loading ? '#ccc' : '#0070f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontSize: '1rem',
-            marginTop: '0.5rem'
-          }}
-        >
-          {loading ? 'Вход...' : 'Войти'}
-        </button>
-      </form>
-
-      {message && (
-        <div style={{
-          marginTop: '1.5rem',
-          padding: '1rem',
-          backgroundColor: message.includes('✅') ? '#e6f7e6' : '#ffe6e6',
-          border: `1px solid ${message.includes('✅') ? '#4caf50' : '#ff4d4d'}`,
-          borderRadius: '4px',
-          color: message.includes('✅') ? '#2e7d32' : '#d32f2f'
-        }}>
-          {message}
+        <div style={authStyles.footer}>
+          <p style={authStyles.footerText}>
+            Нет аккаунта?{' '}
+            <Link href="/register" style={authStyles.link}>
+              Зарегистрироваться
+            </Link>
+          </p>
         </div>
-      )}
-    </main>
+      </div>
+    </div>
   );
 }

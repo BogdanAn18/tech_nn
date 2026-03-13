@@ -1,6 +1,6 @@
 /* Analytics.module.css */
 .container {
-  max-width: 800px;
+  max-width: 1000px; /* чуть шире для двух графиков */
   margin: 0 auto;
   padding: 2rem;
   font-family: system-ui, sans-serif;
@@ -13,7 +13,7 @@
 }
 
 .periodSelector {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem; /* увеличил отступ */
   text-align: right;
   font-size: 1rem;
 }
@@ -42,7 +42,7 @@
   color: white;
   padding: 2rem;
   border-radius: 12px;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem; /* увеличен отступ */
   text-align: center;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
@@ -70,6 +70,7 @@
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 2.5rem; /* добавил отступ снизу */
   text-align: center;
 }
 
@@ -78,10 +79,47 @@
   margin-bottom: 1.5rem;
 }
 
+/* Новый контейнер для столбчатой диаграммы (можно переиспользовать chartContainer) */
+.barChartContainer {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 2.5rem;
+  margin-top: 2rem;
+  text-align: center;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.barChartContainer h2 {
+  color: var(--foreground);
+  margin-bottom: 1.5rem;
+}
+
+/* Адаптивность для маленьких экранов */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  .chartContainer {
+    padding: 1rem;
+    overflow-x: auto;
+  }
+}
+
 .error {
   color: #dc2626;
   background: #fee2e2;
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 1rem;
+}
+
+.note {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  text-align: center;
+  font-style: italic;
 }

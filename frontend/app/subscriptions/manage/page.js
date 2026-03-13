@@ -109,12 +109,21 @@ export default function ManageSubscription() {
               onChange={handleInputChange}
               disabled={loading}
             >
-              <option value="">Выберите</option>
-              <option value="Видео">Видео</option>
-              <option value="Музыка">Музыка</option>
-              <option value="Софт">Софт</option>
-              <option value="Облако">Облако</option>
-              <option value="Доставка">Доставка</option>
+              <option value="">Выберите категорию</option>
+              <option value="Видео">🎬 Видео (Netflix, YouTube, Кинопоиск)</option>
+              <option value="Музыка">🎵 Музыка (Яндекс Музыка, Spotify)</option>
+              <option value="Софт">💻 Софт (Adobe, Microsoft 365)</option>
+              <option value="Облако">☁️ Облако (Google Drive, iCloud)</option>
+              <option value="Доставка">🚚 Доставка (Яндекс Плюс, СберПрайм)</option>
+              <option value="Игры">🎮 Игры (Game Pass, PlayStation Plus)</option>
+              <option value="Образование">📚 Образование (Coursera, Skillbox)</option>
+              <option value="Здоровье">💪 Здоровье (FitMost, онлайн-тренировки)</option>
+              <option value="Книги">📖 Книги (Букмейт, Литрес)</option>
+              <option value="Связь">📱 Связь (МТС, Мегафон, Билайн)</option>
+              <option value="Крипта">₿ Крипта (Binance, Bybit)</option>
+              <option value="AI">🤖 AI (ChatGPT Plus, Midjourney)</option>
+              <option value="Финансы">💰 Финансы (СберПрайм, Тинькофф Premium)</option>
+              <option value="Другое">📦 Другое</option>
             </select>
           </div>
         </div>
