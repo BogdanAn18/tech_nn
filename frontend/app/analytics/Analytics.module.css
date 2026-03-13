@@ -1,0 +1,87 @@
+/* Analytics.module.css */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: system-ui, sans-serif;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.periodSelector {
+  margin-bottom: 1.5rem;
+  text-align: right;
+  font-size: 1rem;
+}
+
+.periodSelector label {
+  margin-right: 0.5rem;
+  color: #333;
+}
+
+.periodSelector select {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: white;
+  font-size: 1rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.periodSelector select:hover {
+  border-color: #667eea;
+}
+
+.forecastCard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.forecastCard h2 {
+  margin: 0 0 1rem 0;
+  font-weight: 400;
+  font-size: 1.5rem;
+}
+
+.forecastAmount {
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 0 0 0.5rem 0;
+}
+
+.monthlyNote {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.chartContainer {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.chartContainer h2 {
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.error {
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}

@@ -1,0 +1,58 @@
+# Зависимости (везде)
+node_modules/
+
+# Файлы окружения
+.env
+.env*.local
+
+# Логи и дебаг
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# OS
+.DS_Store
+*.pem
+
+# Backend
+backend/.env
+
+# Frontend (Next.js)
+.next/
+out/
+build/
+.next/trace
+next-env.d.ts
+
+# Mobile (Expo / React Native)
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+
+# TypeScript
+*.tsbuildinfo
+
+# Тесты
+/coverage
+
+# IDE
+.vscode/
+.idea/
+
+# Yarn (если используешь)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.pnp.*
