@@ -4,6 +4,8 @@ const pool = require('./db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const nodemailer = require('nodemailer');
+const cron = require('node-cron');
 
 const app = express();
 app.use(express.json());
@@ -240,6 +242,132 @@ app.delete('/subscriptions/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Ошибка удаления' });
   }
 });
+
+
+
+
+// ========== НАСТРОЙКА ПОЧТЫ ==========
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: true, // true для 465, false для 587
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
+async function sendNotificationEmail(userEmail, subscription) {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: userEmail,
+    subject: `🔔 Напоминание: скоро спишут ${subscription.name}`,
+    html: `
+      <h2>Здравствуйте!</h2>
+      <p>Напоминаем, что через 1-3 дня будет списание за подписку:</p>
+      <ul>
+        <li><strong>Сервис:</strong> ${subscription.name}</li>
+        <li><strong>Сумма:</strong> ${subscription.price} ₽</li>
+        <li><strong>Категория:</strong> ${subscription.category || 'Другое'}</li>
+      </ul>
+      <p>Вы можете управлять подписками в <a href="http://localhost:3000">личном кабинете</a>.</p>
+      <hr>
+      <p style="color: gray;">Это письмо отправлено, потому что вы включили уведомления. 
+      Отключить можно в настройках профиля.</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Уведомление отправлено для ${userEmail} (${subscription.name})`);
+    return true;
+  } catch (error) {
+    console.error('❌ Ошибка отправки письма:', error);
+    return false;
+  }
+}
+
+// ========== ЛОГИКА УВЕДОМЛЕНИЙ ==========
+function getNextBillingDate(last_billing, period, period_unit) {
+  const date = new Date(last_billing);
+  switch (period_unit) {
+    case 'days':
+      date.setDate(date.getDate() + period);
+      break;
+    case 'months':
+      date.setMonth(date.getMonth() + period);
+      break;
+    case 'years':
+      date.setFullYear(date.getFullYear() + period);
+      break;
+  }
+  return date;
+}
+
+async function checkAndSendNotifications() {
+  console.log('🔍 Проверка подписок для уведомлений...');
+
+  try {
+    // 1. Получаем всех пользователей с включёнными уведомлениями
+    const users = await pool.query(
+      'SELECT id, email FROM users WHERE notifications_enabled = true'
+    );
+
+    for (const user of users.rows) {
+      // 2. Получаем подписки пользователя
+      const subscriptions = await pool.query(
+        `SELECT * FROM subscriptions 
+         WHERE user_email = $1 AND last_billing IS NOT NULL`,
+        [user.email]
+      );
+
+      for (const sub of subscriptions.rows) {
+        // 3. Считаем следующую дату списания
+        const nextBilling = getNextBillingDate(
+          sub.last_billing, 
+          sub.period, 
+          sub.period_unit
+        );
+        
+        const today = new Date();
+        const daysUntil = Math.ceil((nextBilling - today) / (1000 * 60 * 60 * 24));
+
+        // 4. Если осталось 1-3 дня — отправляем уведомление
+        if (daysUntil >= 1 && daysUntil <= 3) {
+          await sendNotificationEmail(user.email, sub);
+          
+          // TODO: добавить защиту от повторной отправки
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ Ошибка при проверке уведомлений:', error);
+  }
+}
+
+// ========== ПОЛУЧИТЬ СТАТУС УВЕДОМЛЕНИЙ ==========
+app.get('/user/notifications', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT notifications_enabled FROM users WHERE id = $1',
+      [req.user.userId]
+    );
+    res.json({ enabled: result.rows[0].notifications_enabled });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Ошибка при получении статуса' });
+  }
+});
+
+// ========== ПЛАНИРОВЩИК ==========
+// Запускаем проверку каждый день в 9 утра
+// cron.schedule('0 9 * * *', () => {
+//   console.log('⏰ Запуск плановой проверки уведомлений');
+//   checkAndSendNotifications().catch(console.error);
+// });
+
+// Для теста можно раскомментировать:
+checkAndSendNotifications();
 
 // ========== ТЕСТОВЫЙ МАРШРУТ ==========
 app.get('/', (req, res) => res.send('🔥 Сервер с JWT работает'));
