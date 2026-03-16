@@ -228,3 +228,14 @@
 .alternativesButton:hover {
   opacity: 0.8;
 }
+
+/* Для всего текста на странице подписок */
+.subscriptionItem,
+.subscriptionName,
+.subscriptionDetails,
+.badge,
+.notificationBlock,
+.notificationLabel,
+.notificationText {
+  color: #333 !important;  /* тёмно-серый, видно на белом */
+}
