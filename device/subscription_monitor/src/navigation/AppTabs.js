@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '../screens/HomeScreen';
+import HomeStack from './HomeStack';
 import AnalyticsScreen from '../screens/AnalyticsScreen';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -21,16 +21,13 @@ export default function AppTabs() {
         },
         tabBarActiveTintColor: '#667eea',
         tabBarInactiveTintColor: 'gray',
-        headerStyle: {
-          backgroundColor: '#667eea',
-        },
-        headerTintColor: '#fff',
+        headerShown: false, // скрываем заголовок табов, так как заголовки будут внутри стеков
       })}
     >
       <Tab.Screen 
         name="Подписки" 
-        component={HomeScreen} 
-        options={{ title: 'Мои подписки' }}
+        component={HomeStack} 
+        options={{ title: 'Подписки' }} // это название вкладки
       />
       <Tab.Screen 
         name="Аналитика" 

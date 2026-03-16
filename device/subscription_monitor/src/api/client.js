@@ -2,10 +2,17 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
+// -- на мак!
+// const BASE_URL = Platform.select({
+//   ios: 'http://10.2.202.48:5000',
+//   android: 'http://10.2.202.48:5000',
+//   default: 'http://10.2.202.48:5000'
+// });
+
 const BASE_URL = Platform.select({
-  ios: 'http://10.2.202.48:5000',
-  android: 'http://10.2.202.48:5000',
-  default: 'http://10.2.202.48:5000'
+  ios: 'http://192.168.0.148:5000',
+  android: 'http://192.168.0.148:5000',
+  default: 'http://192.168.0.148:5000'
 });
 
 const api = axios.create({

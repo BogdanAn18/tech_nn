@@ -9,9 +9,13 @@ const cron = require('node-cron');
 
 const app = express();
 app.use(express.json());
-app.use(cors({
-  origin: ['http://localhost:3000', 'https://твой-сайт.ru']
-}));
+
+app.use(cors());
+// так нельзя, но для отладки норм
+// в продакшен раскомментируем это:
+// app.use(cors({
+//   origin: ['http://localhost:3000', 'https://твой-сайт.ru']
+// }));
 
 // Секретный ключ для подписи токенов (в реальном проекте храни в .env!)
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -356,6 +360,27 @@ app.get('/user/notifications', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка при получении статуса' });
+  }
+});
+
+// ========== ВКЛ/ВЫКЛ УВЕДОМЛЕНИЙ ==========
+app.post('/user/notifications', authenticateToken, async (req, res) => {
+  try {
+    const { enabled } = req.body;
+    const userId = req.user.userId;
+
+    await pool.query(
+      'UPDATE users SET notifications_enabled = $1 WHERE id = $2',
+      [enabled, userId]
+    );
+
+    res.json({ 
+      success: true, 
+      message: enabled ? 'Уведомления включены' : 'Уведомления отключены' 
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Ошибка при обновлении настроек' });
   }
 });
 

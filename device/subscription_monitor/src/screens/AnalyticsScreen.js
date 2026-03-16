@@ -6,26 +6,34 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Dimensions,
+  TouchableOpacity,
 } from 'react-native';
+
 import api from '../api/client';
+
+const { width } = Dimensions.get('window');
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6B6B', '#6B8EFF'];
+
+const periodOptions = [
+  { label: 'Месяц', value: 'month', multiplier: 1 },
+  { label: 'Квартал', value: 'quarter', multiplier: 3 },
+  { label: 'Год', value: 'year', multiplier: 12 },
+];
 
 export default function AnalyticsScreen() {
   const [loading, setLoading] = useState(true);
   const [totalMonthly, setTotalMonthly] = useState(0);
-  const [yearlyForecast, setYearlyForecast] = useState(0);
   const [categories, setCategories] = useState([]);
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
 
   const normalizeToMonthly = (price, period, period_unit) => {
     if (!period || period <= 0) return price;
     switch (period_unit) {
-      case 'days':
-        return (price / period) * 30;
-      case 'months':
-        return price / period;
-      case 'years':
-        return price / (period * 12);
-      default:
-        return price;
+      case 'days': return (price / period) * 30;
+      case 'months': return price / period;
+      case 'years': return price / (period * 12);
+      default: return price;
     }
   };
 
@@ -57,14 +65,13 @@ export default function AnalyticsScreen() {
         }
       });
 
-      const categoryData = Array.from(categoryMap.entries()).map(([name, value]) => ({
+      const chartData = Array.from(categoryMap.entries()).map(([name, value]) => ({
         name,
         value: Math.round(value * 100) / 100,
       }));
 
-      setCategories(categoryData);
+      setCategories(chartData);
       setTotalMonthly(Math.round(monthlyTotal * 100) / 100);
-      setYearlyForecast(Math.round(monthlyTotal * 12 * 100) / 100);
     } catch (error) {
       Alert.alert('Ошибка', 'Не удалось загрузить данные');
     } finally {
@@ -80,15 +87,59 @@ export default function AnalyticsScreen() {
     );
   }
 
+  const currentPeriod = periodOptions.find(p => p.value === selectedPeriod);
+  const totalForPeriod = totalMonthly * currentPeriod.multiplier;
+  const periodLabel = currentPeriod.label.toLowerCase();
+
   return (
-    <View style={styles.container}>
-      <Text>Общая сумма в месяц: {totalMonthly} ₽</Text>
-      <Text>Прогноз на год: {yearlyForecast} ₽</Text>
-      <Text>Распределение по категориям:</Text>
-      {categories.map(item => (
-        <Text key={item.name}>{item.name}: {item.value} ₽</Text>
-      ))}
-    </View>
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Аналитика расходов</Text>
+
+      {/* Выбор периода */}
+      <View style={styles.periodSelector}>
+        {periodOptions.map(option => (
+          <TouchableOpacity
+            key={option.value}
+            style={[
+              styles.periodButton,
+              selectedPeriod === option.value && styles.periodButtonActive,
+            ]}
+            onPress={() => setSelectedPeriod(option.value)}
+          >
+            <Text style={[
+              styles.periodButtonText,
+              selectedPeriod === option.value && styles.periodButtonTextActive,
+            ]}>
+              {option.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Карточка прогноза */}
+      <View style={styles.forecastCard}>
+        <Text style={styles.forecastTitle}>Прогноз на {periodLabel}</Text>
+        <Text style={styles.forecastAmount}>{totalForPeriod.toFixed(2)} ₽</Text>
+        <Text style={styles.monthlyNote}>≈ {totalMonthly.toFixed(2)} ₽ в месяц</Text>
+      </View>
+
+      {/* Круговая диаграмма с тултипом */}
+      {categories.length > 0 ? (
+        <View style={styles.chartContainer}>
+          <Text style={styles.chartTitle}>Распределение по категориям</Text>
+          <View style={styles.legend}>
+            {categories.map((item, index) => (
+              <View key={item.name} style={styles.legendItem}>
+                <View style={[styles.legendColor, { backgroundColor: COLORS[index % COLORS.length] }]} />
+                <Text style={styles.legendText}>{item.name}: {item.value} ₽</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : (
+        <Text style={styles.emptyText}>Нет данных для отображения</Text>
+      )}
+    </ScrollView>
   );
 }
 
@@ -108,8 +159,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 20,
+    marginTop: 30,
+    textAlign: 'center',
   },
-  card: {
+  periodSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  periodButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#e0e0e0',
+  },
+  periodButtonActive: {
+    backgroundColor: '#667eea',
+  },
+  periodButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+  },
+  periodButtonTextActive: {
+    color: '#fff',
+  },
+  forecastCard: {
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 20,
@@ -119,41 +194,63 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    alignItems: 'center',
   },
-  cardTitle: {
+  forecastTitle: {
     fontSize: 18,
     color: '#666',
     marginBottom: 10,
   },
-  cardAmount: {
-    fontSize: 32,
+  forecastAmount: {
+    fontSize: 36,
     fontWeight: 'bold',
     color: '#667eea',
     marginBottom: 5,
   },
-  cardSubtext: {
-    fontSize: 14,
+  monthlyNote: {
+    fontSize: 16,
     color: '#999',
   },
-  categoryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+  chartContainer: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  categoryName: {
-    fontSize: 16,
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: '500',
     color: '#333',
+    marginBottom: 15,
   },
-  categoryValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#667eea',
+  legend: {
+    marginTop: 20,
+    width: '100%',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  legendColor: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  legendText: {
+    fontSize: 14,
+    color: '#333',
   },
   emptyText: {
     textAlign: 'center',
     color: '#999',
-    padding: 20,
+    marginTop: 50,
   },
 });
